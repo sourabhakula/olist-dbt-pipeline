@@ -1,6 +1,6 @@
 # Olist E-Commerce dbt Pipeline
 
-I built this project to learn analytics engineering properly — not just write 
+I built this project to learn analytics engineering properly not just write 
 SQL, but structure it the way data teams actually do it at companies like 
 Airbnb, Uber, and Spotify.
 
@@ -109,7 +109,7 @@ dbt docs serve
 ## What I Learned
 
 Setting up the layered architecture forced me to think clearly about separation 
-of concerns — what belongs in staging vs intermediate vs marts. That clarity 
+of concerns what belongs in staging vs intermediate vs marts. That clarity 
 makes the pipeline easier to debug, easier to extend, and easier for another 
 analyst to pick up and understand.
 
