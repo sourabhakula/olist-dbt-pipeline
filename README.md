@@ -128,5 +128,5 @@ shift is what analytics engineering actually is.
 Save this into your README.md, then run:
 ```
 git add README.md
-git commit -m "Add README in first person"
+git commit -m "Add README"
 git push
