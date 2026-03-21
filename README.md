@@ -10,7 +10,6 @@ I used dbt and DuckDB to transform that raw data into business-ready analytical
 tables following the staging → intermediate → marts pattern you see in production 
 pipelines.
 
----
 
 ## Why I Built This
 
@@ -22,7 +21,6 @@ documentation that updates itself.
 Every design decision in this project mirrors what an analytics engineer would do 
 on the job.
 
----
 
 ## How the Pipeline Works
 
@@ -42,7 +40,6 @@ the seller level. These models exist so the mart layer stays simple and readable
 One for order performance, one for seller performance, one for customer behavior. 
 These are materialized as physical tables so queries are fast.
 
----
 
 ## Models
 
@@ -71,7 +68,6 @@ These are materialized as physical tables so queries are fast.
 | mart_seller_performance | Scores every seller as Top, Average, or Underperforming based on review score and cancellation rate |
 | mart_customer_behavior | Segments every customer as One Time, Repeat, or Loyal based on how many orders they placed |
 
----
 
 ## Testing
 
@@ -83,7 +79,6 @@ rather than silently passing bad data downstream.
 This is the part of analytics engineering most people skip in portfolio projects. 
 I didn't skip it because in a real job, untested pipelines are liabilities.
 
----
 
 ## How to Run It Yourself
 ```bash
@@ -102,9 +97,7 @@ dbt test
 # Generate and view documentation
 dbt docs generate
 dbt docs serve
-```
 
----
 
 ## What I Learned
 
@@ -118,15 +111,11 @@ the way you think about SQL. When you use ref() instead of hardcoding table name
 you stop thinking in individual queries and start thinking in data flows. That 
 shift is what analytics engineering actually is.
 
----
 
 **Dataset:** Olist Brazilian E-Commerce — Kaggle  
 **Tools:** dbt Core 1.11, DuckDB, SQL  
 **Models:** 11 | **Tests:** 17 | **Seeds:** 9
-```
 
-Save this into your README.md, then run:
-```
 git add README.md
-git commit -m "Add README"
+git commit -m "Fix README"
 git push
