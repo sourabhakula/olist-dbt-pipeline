@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: int_orders_enriched
+    description: >
+      Orders joined with customers, order items, payments and reviews.
+      One row per order with all metrics pre-calculated including delivery days
+      and days early or late vs estimated delivery date.
+    columns:
+      - name: order_id
+        description: Unique identifier for each order
+      - name: delivery_days
+        description: Days from order placed to delivery
+      - name: days_early_or_late
+        description: Negative means early, positive means late vs estimated date
+
+  - name: int_seller_metrics
+    description: >
+      Seller-level aggregation joining order items, orders, reviews, 
+      products and category translations. One row per seller with 
+      total orders, revenue, and review metrics.
+    columns:
+      - name: seller_id
+        description: Unique identifier for each seller
+      - name: total_revenue
+        description: Total revenue across all delivered and non-canceled orders
+      - name: avg_review_score
+        description: Average review score received by this seller
