@@ -73,4 +73,4 @@ to run it yourself:
 
 dataset: Olist Brazilian E-Commerce on Kaggle
 tools: dbt Core 1.11, DuckDB, SQL
-models: 11 | tests: 17 | seeds: 9
+models: 11, tests: 17, seeds: 9
