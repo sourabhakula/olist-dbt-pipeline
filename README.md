@@ -1,121 +1,76 @@
 # Olist E-Commerce dbt Pipeline
 
-I built this project to learn analytics engineering properly not just write 
-SQL, but structure it the way data teams actually do it at companies like 
-Airbnb, Uber, and Spotify.
+open olist_pipeline/ to see the full project.
 
-The dataset is real. Olist is a Brazilian e-commerce marketplace that published 
-100,000+ orders, customers, sellers, payments and reviews as open data on Kaggle. 
-I used dbt and DuckDB to transform that raw data into business-ready analytical 
-tables following the staging → intermediate → marts pattern you see in production 
-pipelines.
+I wanted minutely mimic how data teams actually structure SQL transformations at 
+companies like Airbnb or Uber, not just write queries against a flat table 
+and call it a project. So I took a real dataset, 100,000+ orders from Olist, 
+a Brazilian e-commerce marketplace, and built a proper layered pipeline using 
+dbt and DuckDB.
 
+The dataset is public on Kaggle. Olist published their actual transaction data 
+including orders, customers, sellers, payments and reviews. I used dbt to 
+transform that raw data into business-ready tables following the staging to 
+intermediate to marts pattern you see in production data teams.
 
-## Why I Built This
+The pipeline has three layers and each one has a specific job. Staging is just 
+cleaning. Rename columns, cast dates from text to timestamps, nothing else. 
+Intermediate is where joins happen and business logic gets applied. Marts are 
+the final tables a BI tool connects to. Three of them, one for order performance, 
+one for seller performance, one for customer behavior.
 
-Most portfolio projects stop at writing SQL queries. I wanted to go further and 
-show that I understand how data pipelines are actually structured in a professional 
-environment — with layered models, dependency tracking, automated testing, and 
-documentation that updates itself.
+The thing that changed how I think about SQL was the ref() function. Instead 
+of hardcoding table names you reference other models and dbt builds a dependency 
+graph automatically. It figures out what order to run everything in. You stop 
+thinking in individual queries and start thinking in data flows. That shift is 
+what analytics engineering actually is and I did not fully get it until I built 
+this.
 
-Every design decision in this project mirrors what an analytics engineer would do 
-on the job.
-
-
-## How the Pipeline Works
-
-I organized the transformation logic into three layers. Each layer has a specific 
-job and nothing else.
-
-**Staging** — I clean the raw CSV data here. Rename columns to be consistent, 
-cast dates from text to timestamps, remove ambiguity. No business logic, no joins. 
-Just clean data. One model per source table.
-
-**Intermediate** — This is where I join tables and apply business rules. I built 
-two models here. The first enriches every order with customer info, payment totals, 
-review scores and delivery metrics. The second aggregates all order activity to 
-the seller level. These models exist so the mart layer stays simple and readable.
-
-**Marts** — Three final tables that a BI tool or analyst can query directly. 
-One for order performance, one for seller performance, one for customer behavior. 
-These are materialized as physical tables so queries are fast.
+I also wrote 17 data tests. Every primary key tested for uniqueness and nulls. 
+Order status validated against an accepted values list so if something unexpected 
+shows up in the source data the pipeline breaks loudly instead of silently passing 
+bad data downstream. Most portfolio projects skip this. I did not because in a 
+real job untested pipelines are liabilities.
 
 
-## Models
+staging layer, 8 views
 
-### Staging (8 views)
-| Model | What it does |
+| model | what it does |
 |-------|-------------|
-| stg_orders | Cleans order timestamps and standardizes status values |
-| stg_customers | Customer city and state with clean column names |
-| stg_order_items | Line items with price and freight per order |
-| stg_order_payments | Payment type, installments and value per order |
-| stg_order_reviews | Review scores and timestamps |
-| stg_products | Product dimensions and category in Portuguese |
-| stg_sellers | Seller location data |
-| stg_category_translations | Maps Portuguese category names to English |
+| stg_orders | cleans order timestamps and standardizes status values |
+| stg_customers | customer city and state with clean column names |
+| stg_order_items | line items with price and freight per order |
+| stg_order_payments | payment type, installments and value per order |
+| stg_order_reviews | review scores and timestamps |
+| stg_products | product dimensions and category in portuguese |
+| stg_sellers | seller location data |
+| stg_category_translations | maps portuguese category names to english |
 
-### Intermediate (2 views)
-| Model | What it does |
+intermediate layer, 2 views
+
+| model | what it does |
 |-------|-------------|
-| int_orders_enriched | Joins orders, customers, items, payments and reviews into one row per order. Calculates delivery days and days early or late vs estimated date |
-| int_seller_metrics | Aggregates all order activity to one row per seller with revenue, review scores and cancellation counts |
+| int_orders_enriched | joins orders, customers, items, payments and reviews into one row per order. calculates delivery days and days early or late vs estimated date |
+| int_seller_metrics | aggregates all order activity to one row per seller with revenue, review scores and cancellation counts |
 
-### Marts (3 tables)
-| Model | What it does |
+marts layer, 3 tables
+
+| model | what it does |
 |-------|-------------|
-| mart_order_performance | Adds delivery status (On Time / Late / Canceled) and review sentiment (Positive / Neutral / Negative) flags to every order |
-| mart_seller_performance | Scores every seller as Top, Average, or Underperforming based on review score and cancellation rate |
-| mart_customer_behavior | Segments every customer as One Time, Repeat, or Loyal based on how many orders they placed |
+| mart_order_performance | adds delivery status and review sentiment flags to every order |
+| mart_seller_performance | scores every seller as top, average, or underperforming based on review score and cancellation rate |
+| mart_customer_behavior | segments every customer as one time, repeat, or loyal based on order frequency |
 
 
-## Testing
+to run it yourself:
 
-I wrote 17 data tests across the pipeline. Every primary key is tested for 
-uniqueness and nulls. Order status is validated against an accepted values list 
-so the pipeline breaks loudly if an unexpected value appears in the source data 
-rather than silently passing bad data downstream.
+    pip install dbt-duckdb
+    dbt seed
+    dbt run
+    dbt test
+    dbt docs generate
+    dbt docs serve
 
-This is the part of analytics engineering most people skip in portfolio projects. 
-I didn't skip it because in a real job, untested pipelines are liabilities.
-
-
-## How to Run It Yourself
-```bash
-# Install dbt with DuckDB adapter
-pip install dbt-duckdb
-
-# Load the raw CSVs into DuckDB
-dbt seed
-
-# Run all 11 models
-dbt run
-
-# Run all 17 tests
-dbt test
-
-# Generate and view documentation
-dbt docs generate
-dbt docs serve
-
-
-## What I Learned
-
-Setting up the layered architecture forced me to think clearly about separation 
-of concerns what belongs in staging vs intermediate vs marts. That clarity 
-makes the pipeline easier to debug, easier to extend, and easier for another 
-analyst to pick up and understand.
-
-The part that surprised me most was how much dbt's dependency tracking changes 
-the way you think about SQL. When you use ref() instead of hardcoding table names, 
-you stop thinking in individual queries and start thinking in data flows. That 
-shift is what analytics engineering actually is.
-
-
-**Dataset:** Olist Brazilian E-Commerce — Kaggle  
-**Tools:** dbt Core 1.11, DuckDB, SQL  
-**Models:** 11 | **Tests:** 17 | **Seeds:** 9
-
-git add README.md
-git commit -m "Fix README"
-git push
+dataset: Olist Brazilian E-Commerce on Kaggle
+tools: dbt Core 1.11, DuckDB, SQL
+models: 11 | tests: 17 | seeds: 9
